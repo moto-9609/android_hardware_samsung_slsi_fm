@@ -16,78 +16,174 @@
 
 #include <jni.h>
 #include <log/log.h>
+#include <math.h>
+#include "FmRadioController_slsi.h"
 
 #ifdef LOG_TAG
 #undef LOG_TAG
 #endif
-#define LOG_TAG "FMLIB_JNI"
+#define LOG_TAG "FMLIB_SLSI_JNI"
+
+static FmRadioController_slsi * pFMRadio = NULL;
 
 jboolean openDev(JNIEnv *env, jobject thiz)
 {
+    pFMRadio = new FmRadioController_slsi();
+    
+    if (pFMRadio->Initialise() == 0) {
+        ALOGI("%s FM Radio Initialized Successfully\n", __func__);
+        return JNI_TRUE;
+    }
+
+    ALOGE("%s failed to initialise FmRadio\n", __func__);
+    return JNI_FALSE;
 }
 
 jboolean closeDev(JNIEnv *env, jobject thiz)
 {
+    delete pFMRadio;
+    pFMRadio = NULL;
+    ALOGI("%s FM Radio Un-Initialized Successfully\n", __func__);
+
+    return JNI_TRUE;
 }
 
 jboolean powerUp(JNIEnv *env, jobject thiz, jfloat freq)
 {
+    pFMRadio->TuneChannel((int)(freq * 1000.00000000));
+    ALOGI("%s [freq=%d] \n", __func__, (int)freq);
+
+    return JNI_TRUE;
 }
 
 jboolean powerDown(JNIEnv *env, jobject thiz, jint type)
 {
+    ALOGI("%s \n", __func__);
+
+    return JNI_TRUE;
 }
 
 jboolean tune(JNIEnv *env, jobject thiz, jfloat freq)
 {
+    pFMRadio->TuneChannel((int)(freq * 1000.00000000));
+    ALOGI("%s [freq=%d] \n", __func__, (int)freq);
+
+    return JNI_TRUE;
 }
 
 jfloat seek(JNIEnv *env, jobject thiz, jfloat freq, jboolean isUp) //jboolean isUp;
 {
+    int ret;
+    if (isup == JNI_TRUE) {
+        ret = pFMRadio->SeekUp();
+    } else {
+        ret = pFMRadio->SeekDown();
+    }
+
+    ALOGI("%s [freq=%d] \n", __func__, ret);
+
+    return roundf((ret/1000.00F) * 100) / 100;
 }
 
 jshortArray autoScan(JNIEnv *env, jobject thiz)
 {
+    ALOGD("%s not supported \n", __func__);
+
+    return JNI_FALSE;
 }
 
 jshort readRds(JNIEnv *env, jobject thiz)
 {
+    ALOGD("%s not supported \n", __func__);
+
+    return JNI_FALSE;
 }
 
 jbyteArray getPs(JNIEnv *env, jobject thiz)
 {
+    ALOGI("%s \n", __func__);
+    // TODO
+    jbyteArray PSName;
+    uint8_t *rt = NULL;
+    int rt_len = 0;
+    PSName = env->NewByteArray(rt_len);
+    env->SetByteArrayRegion(PSName, 0, rt_len, (const jbyte*)rt);
+    return PSName;
 }
 
 jbyteArray getLrText(JNIEnv *env, jobject thiz)
 {
+    ALOGI("%s \n", __func__);
+    // TODO
+    jbyteArray PSName;
+    uint8_t *rt = NULL;
+    int rt_len = 0;
+    PSName = env->NewByteArray(rt_len);
+    env->SetByteArrayRegion(PSName, 0, rt_len, (const jbyte*)rt);
+    return PSName;
 }
 
 jshort activeAf(JNIEnv *env, jobject thiz)
 {
+    ALOGI("%s \n", __func__);
+    
+    int ret = pFMRadio->GetChannel();
+
+    return roundf((ret/1000.00F) * 100) / 100;
 }
 
 jshortArray getAFList(JNIEnv *env, jobject thiz)
 {
+    ALOGD("%s not supported \n", __func__);
+
+    return JNI_FALSE;
 }
 
 jint setRds(JNIEnv *env, jobject thiz, jboolean rdson)
 {
+    if (rdson == JNI_TRUE) {
+        pFMRadio->EnableRDS();
+    } else {
+        pFMRadio->DisableRDS();
+    }
+
+    ALOGI("%s\n", __func__);
+
+    return JNI_TRUE;
 }
 
 jboolean stopScan(JNIEnv *env, jobject thiz)
 {
+    ALOGD("%s not supported \n", __func__);
+
+    return JNI_TRUE;
 }
 
 jint setMute(JNIEnv *env, jobject thiz, jboolean mute)
 {
+    if (mute == JNI_TRUE) {
+        pFMRadio->MuteOn();
+    } else {
+        pFMRadio->MuteOff();
+    }
+
+    ALOGI("%s  [mute=%d] \n", __func__, (int)mute);
+
+    return JNI_TRUE;
 }
 
 jint isRdsSupport(JNIEnv *env, jobject thiz)
 {
+    ALOGD("%s not supported \n", __func__);
+
+    return JNI_FALSE;
 }
 
 jint switchAntenna(JNIEnv *env, jobject thiz, jint antenna)
 {
+    ALOGD("%s not supported \n", __func__);
+
+    return JNI_FALSE;
 }
 
 static const char *classPathNameRx = "com/android/fmradio/FmNative";
