@@ -26,7 +26,7 @@
 
 static FmRadioController_slsi * pFMRadio = NULL;
 
-jboolean openDev(JNIEnv *env, jobject thiz)
+jboolean openDev(JNIEnv *env __unused, jobject thiz __unused)
 {
     pFMRadio = new FmRadioController_slsi();
     
@@ -39,7 +39,7 @@ jboolean openDev(JNIEnv *env, jobject thiz)
     return JNI_FALSE;
 }
 
-jboolean closeDev(JNIEnv *env, jobject thiz)
+jboolean closeDev(JNIEnv *env __unused, jobject thiz __unused)
 {
     delete pFMRadio;
     pFMRadio = NULL;
@@ -48,7 +48,7 @@ jboolean closeDev(JNIEnv *env, jobject thiz)
     return JNI_TRUE;
 }
 
-jboolean powerUp(JNIEnv *env, jobject thiz, jfloat freq)
+jboolean powerUp(JNIEnv *env __unused, jobject thiz __unused, jfloat freq)
 {
     pFMRadio->TuneChannel((int)(freq * 1000.00000000));
     ALOGI("%s [freq=%d] \n", __func__, (int)freq);
@@ -56,14 +56,14 @@ jboolean powerUp(JNIEnv *env, jobject thiz, jfloat freq)
     return JNI_TRUE;
 }
 
-jboolean powerDown(JNIEnv *env, jobject thiz, jint type)
+jboolean powerDown(JNIEnv *env __unused, jobject thiz __unused, jint type __unused)
 {
     ALOGI("%s \n", __func__);
 
     return JNI_TRUE;
 }
 
-jboolean tune(JNIEnv *env, jobject thiz, jfloat freq)
+jboolean tune(JNIEnv *env __unused, jobject thiz __unused, jfloat freq)
 {
     pFMRadio->TuneChannel((int)(freq * 1000.00000000));
     ALOGI("%s [freq=%d] \n", __func__, (int)freq);
@@ -71,10 +71,10 @@ jboolean tune(JNIEnv *env, jobject thiz, jfloat freq)
     return JNI_TRUE;
 }
 
-jfloat seek(JNIEnv *env, jobject thiz, jfloat freq, jboolean isUp) //jboolean isUp;
+jfloat seek(JNIEnv *env __unused, jobject thiz __unused, jfloat freq __unused, jboolean isUp)
 {
     int ret;
-    if (isup == JNI_TRUE) {
+    if (isUp == JNI_TRUE) {
         ret = pFMRadio->SeekUp();
     } else {
         ret = pFMRadio->SeekDown();
@@ -85,21 +85,21 @@ jfloat seek(JNIEnv *env, jobject thiz, jfloat freq, jboolean isUp) //jboolean is
     return roundf((ret/1000.00F) * 100) / 100;
 }
 
-jshortArray autoScan(JNIEnv *env, jobject thiz)
+jshortArray autoScan(JNIEnv *env __unused, jobject thiz __unused)
 {
     ALOGD("%s not supported \n", __func__);
 
     return JNI_FALSE;
 }
 
-jshort readRds(JNIEnv *env, jobject thiz)
+jshort readRds(JNIEnv *env __unused, jobject thiz __unused)
 {
     ALOGD("%s not supported \n", __func__);
 
     return JNI_FALSE;
 }
 
-jbyteArray getPs(JNIEnv *env, jobject thiz)
+jbyteArray getPs(JNIEnv *env, jobject thiz __unused)
 {
     ALOGI("%s \n", __func__);
     // TODO
@@ -111,7 +111,7 @@ jbyteArray getPs(JNIEnv *env, jobject thiz)
     return PSName;
 }
 
-jbyteArray getLrText(JNIEnv *env, jobject thiz)
+jbyteArray getLrText(JNIEnv *env, jobject thiz __unused)
 {
     ALOGI("%s \n", __func__);
     // TODO
@@ -123,7 +123,7 @@ jbyteArray getLrText(JNIEnv *env, jobject thiz)
     return PSName;
 }
 
-jshort activeAf(JNIEnv *env, jobject thiz)
+jshort activeAf(JNIEnv *env __unused, jobject thiz __unused)
 {
     ALOGI("%s \n", __func__);
     
@@ -132,14 +132,14 @@ jshort activeAf(JNIEnv *env, jobject thiz)
     return roundf((ret/1000.00F) * 100) / 100;
 }
 
-jshortArray getAFList(JNIEnv *env, jobject thiz)
+jshortArray getAFList(JNIEnv *env __unused, jobject thiz __unused)
 {
     ALOGD("%s not supported \n", __func__);
 
     return JNI_FALSE;
 }
 
-jint setRds(JNIEnv *env, jobject thiz, jboolean rdson)
+jint setRds(JNIEnv *env __unused, jobject thiz __unused, jboolean rdson)
 {
     if (rdson == JNI_TRUE) {
         pFMRadio->EnableRDS();
@@ -152,14 +152,14 @@ jint setRds(JNIEnv *env, jobject thiz, jboolean rdson)
     return JNI_TRUE;
 }
 
-jboolean stopScan(JNIEnv *env, jobject thiz)
+jboolean stopScan(JNIEnv *env __unused, jobject thiz __unused)
 {
     ALOGD("%s not supported \n", __func__);
 
     return JNI_TRUE;
 }
 
-jint setMute(JNIEnv *env, jobject thiz, jboolean mute)
+jint setMute(JNIEnv *env __unused, jobject thiz __unused, jboolean mute)
 {
     if (mute == JNI_TRUE) {
         pFMRadio->MuteOn();
@@ -172,14 +172,14 @@ jint setMute(JNIEnv *env, jobject thiz, jboolean mute)
     return JNI_TRUE;
 }
 
-jint isRdsSupport(JNIEnv *env, jobject thiz)
+jint isRdsSupport(JNIEnv *env __unused, jobject thiz __unused)
 {
     ALOGD("%s not supported \n", __func__);
 
     return JNI_FALSE;
 }
 
-jint switchAntenna(JNIEnv *env, jobject thiz, jint antenna)
+jint switchAntenna(JNIEnv *env __unused, jobject thiz __unused, jint antenna __unused)
 {
     ALOGD("%s not supported \n", __func__);
 
@@ -262,7 +262,7 @@ typedef union {
     void* venv;
 } UnionJNIEnvToVoid;
 
-jint JNI_OnLoad(JavaVM* vm, void* reserved)
+jint JNI_OnLoad(JavaVM* vm, void* reserved __unused)
 {
     UnionJNIEnvToVoid uenv;
     uenv.venv = NULL;

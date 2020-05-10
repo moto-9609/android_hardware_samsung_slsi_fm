@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <sys/poll.h>
-#include <utils/Log.h>
+#include <log/log.h>
 //#include <linux/videodev2.h>
 
 #include "FmRadioController_slsi.h"
@@ -16,6 +16,24 @@
 
 long channel_limit_low;
 long channel_limit_high;
+
+unsigned char test_read_data[TEST_DATA_SIZE][12];
+radio_data_t test_radio_data[TEST_DATA_SIZE];
+struct PIECC_data test_piecc[TEST_DATA_SIZE];
+struct RTPlus_data test_rtplus[TEST_DATA_SIZE];
+struct Final_RDS_data final_rds_data[10];
+
+RadioText RT_Final;
+RadioText RT_Buffered;
+ServiceName PS_Final;
+ServiceName PS_Buffered;
+
+unsigned char rt_flag;
+unsigned char ps_flag;
+
+unsigned int test_data_index;
+unsigned int test_data_index_rtplus;
+unsigned int test_data_index_rds;
 
 /*******************************************************************************
  *
@@ -162,7 +180,7 @@ static int fm_radio_set_control(int fd, unsigned int id, long val)
     struct v4l2_control ctrl;
     int ret;
 
-    ALOGD("FmRadioController:fm_radio_set_control: id(%d) val(%d)\n", id, val);
+    ALOGD("FmRadioController:fm_radio_set_control: id(%d) val(%ld)\n", id, val);
 
     ctrl.id = id;
     if (val)
@@ -327,7 +345,7 @@ void FmRadioController_slsi::TuneChannel(long channel)
 {
     int ret;
 
-    ALOGI("FmRadioController::TuneChannel: %d\n", channel);
+    ALOGI("FmRadioController::TuneChannel: %ld\n", channel);
 
     ret = fm_radio_check_state(&radio_state);
     if (ret < 0)
@@ -575,15 +593,13 @@ fail:
  */
 void FmRadioController_slsi::SetVolume(long volume)
 {
-    int ret;
-
-    ALOGI("FmRadioController::SetVolume: %d\n", volume);
+    ALOGI("FmRadioController::SetVolume: %ld\n", volume);
     current_volume = volume;
 }
 
 long FmRadioController_slsi::GetVolume()
 {
-    ALOGI("FmRadioController::GetVolume: %d\n", current_volume);
+    ALOGI("FmRadioController::GetVolume: %ld\n", current_volume);
     return current_volume;
 }
 
@@ -840,7 +856,7 @@ void FmRadioController_slsi::SetDeConstant(long DeConstant)
     long val_deconstant;
     int ret;
 
-    ALOGI("FmRadioController::SetDeConstant: %d\n", DeConstant);
+    ALOGI("FmRadioController::SetDeConstant: %ld\n", DeConstant);
 
     ret = fm_radio_check_state(&radio_state);
     if (ret < 0)
@@ -854,7 +870,7 @@ void FmRadioController_slsi::SetDeConstant(long DeConstant)
 	    val_deconstant = FM_RADIO_DE_TIME_CONSTANT_0;
 	    break;
         default:
-            ALOGE("FmRadioController::SetDeConstant: [%d] is not supported\n", DeConstant);
+            ALOGE("FmRadioController::SetDeConstant: [%ld] is not supported\n", DeConstant);
             goto fail;
     }
 
@@ -862,7 +878,7 @@ void FmRadioController_slsi::SetDeConstant(long DeConstant)
     if (ret < 0)
         goto fail;
 
-    ALOGI("FmRadioController::setDeConstant: set[%d] success\n", val_deconstant);
+    ALOGI("FmRadioController::setDeConstant: set[%ld] success\n", val_deconstant);
 
 fail:
     if (radio_state != FM_RADIO_STOP)
@@ -895,7 +911,7 @@ long FmRadioController_slsi::GetCurrentRSSI()
     if (value > 127)
         value |= 0xFFFFFF00;
 
-    ALOGI("FmRadioController::GetCurrentRSSI: %d\n", value);
+    ALOGI("FmRadioController::GetCurrentRSSI: %ld\n", value);
 
 done:
     if (radio_state != FM_RADIO_STOP)
@@ -927,7 +943,7 @@ long FmRadioController_slsi::GetCurrentSNR()
         goto done;
     }
 
-    ALOGI("FmRadioController::GetCurrentSNR: %d\n", value);
+    ALOGI("FmRadioController::GetCurrentSNR: %ld\n", value);
 
 done:
     if (radio_state != FM_RADIO_STOP)
@@ -946,7 +962,7 @@ void FmRadioController_slsi::SetCurrentRSSI(long rssi)
     unsigned char crssi;
     int ret;
 
-    ALOGI("FmRadioController::SetCurrentRSSI: %d\n", rssi);
+    ALOGI("FmRadioController::SetCurrentRSSI: %ld\n", rssi);
 
     ret = fm_radio_check_state(&radio_state);
     if (ret < 0)
@@ -959,7 +975,7 @@ void FmRadioController_slsi::SetCurrentRSSI(long rssi)
     if (ret < 0)
         goto fail;
 
-    ALOGI("FmRadioController::SetCurrentRSSI: set[%d] success\n", rssi);
+    ALOGI("FmRadioController::SetCurrentRSSI: set[%ld] success\n", rssi);
 
 fail:
     if (radio_state != FM_RADIO_STOP)
@@ -993,7 +1009,7 @@ long FmRadioController_slsi::GetSeekMode()
         goto done;
     }
 
-    ALOGI("FmRadioController::GetSeekMode: %d\n", seek_mode);
+    ALOGI("FmRadioController::GetSeekMode: %ld\n", seek_mode);
 
 done:
     if (radio_state != FM_RADIO_STOP)
@@ -1011,7 +1027,7 @@ void FmRadioController_slsi::SetSeekMode(long seek_mode)
 {
     int ret;
 
-    ALOGI("FmRadioController::SetSeekMode %d\n", seek_mode);
+    ALOGI("FmRadioController::SetSeekMode %ld\n", seek_mode);
 
     ret = fm_radio_check_state(&radio_state);
     if (ret < 0)
@@ -1021,7 +1037,7 @@ void FmRadioController_slsi::SetSeekMode(long seek_mode)
     if (ret < 0)
         goto fail;
 
-    ALOGI("FmRadioController::SetSeekMode: set[%d] success\n", seek_mode);
+    ALOGI("FmRadioController::SetSeekMode: set[%ld] success\n", seek_mode);
 
 fail:
     if (radio_state != FM_RADIO_STOP)
@@ -1353,7 +1369,9 @@ void FmRadioController_slsi::radio_data_proc(unsigned char *buf, int count)
     struct PIECC_data piecc_data;
     struct Final_RDS_data final_rds_data;
     struct RTPlus_data rtplus_data;
+#if !defined(FM_RADIO_TEST_MODE)
     unsigned short checkFlag = 0;
+#endif
     int i;
 
     memset(&r_data, 0, sizeof(radio_data_t));
@@ -1907,12 +1925,12 @@ int FmRadioController_slsi::GetAFValid_th()
  ******************************************************************************/
 void FmRadioController_slsi::SetSeekRSSI(long freq)
 {
-    ALOGI("FmRadioController::SetSeekRSSI: freq:%d\n", freq);
+    ALOGI("FmRadioController::SetSeekRSSI: freq:%ld\n", freq);
 }
 
 void FmRadioController_slsi::SetSeekSNR(long freq)
 {
-    ALOGI("FmRadioController::SetSeekSNR: freq:%d\n", freq);
+    ALOGI("FmRadioController::SetSeekSNR: freq:%ld\n", freq);
 }
 
 void FmRadioController_slsi::setScanning(bool value)
