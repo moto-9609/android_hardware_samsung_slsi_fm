@@ -94,33 +94,33 @@ jshortArray autoScan(JNIEnv *env __unused, jobject thiz __unused)
 
 jshort readRds(JNIEnv *env __unused, jobject thiz __unused)
 {
-    ALOGD("%s not supported \n", __func__);
+    ALOGI("%s \n", __func__);
 
-    return JNI_FALSE;
+    return pFMRadio->ReadRDS();
 }
 
 jbyteArray getPs(JNIEnv *env, jobject thiz __unused)
 {
     ALOGI("%s \n", __func__);
-    // TODO
+
     jbyteArray PSName;
-    uint8_t *rt = NULL;
-    int rt_len = 0;
-    PSName = env->NewByteArray(rt_len);
-    env->SetByteArrayRegion(PSName, 0, rt_len, (const jbyte*)rt);
+    ServiceName ps = pFMRadio->GetPs();
+    PSName = env->NewByteArray(ps.iLenght);
+    env->SetByteArrayRegion(PSName, 0, ps.iLenght, (const jbyte*)ps.Text);
+
     return PSName;
 }
 
 jbyteArray getLrText(JNIEnv *env, jobject thiz __unused)
 {
     ALOGI("%s \n", __func__);
-    // TODO
-    jbyteArray PSName;
-    uint8_t *rt = NULL;
-    int rt_len = 0;
-    PSName = env->NewByteArray(rt_len);
-    env->SetByteArrayRegion(PSName, 0, rt_len, (const jbyte*)rt);
-    return PSName;
+
+    jbyteArray SName;
+    RadioText rt = pFMRadio->GetLrText();
+    SName = env->NewByteArray(rt.iLenght);
+    env->SetByteArrayRegion(SName, 0, rt.iLenght, (const jbyte*)rt.Text);
+
+    return SName;
 }
 
 jshort activeAf(JNIEnv *env __unused, jobject thiz __unused)
@@ -174,9 +174,9 @@ jint setMute(JNIEnv *env __unused, jobject thiz __unused, jboolean mute)
 
 jint isRdsSupport(JNIEnv *env __unused, jobject thiz __unused)
 {
-    ALOGD("%s not supported \n", __func__);
+    ALOGI("%s \n", __func__);
 
-    return JNI_FALSE;
+    return JNI_TRUE;
 }
 
 jint switchAntenna(JNIEnv *env __unused, jobject thiz __unused, jint antenna __unused)

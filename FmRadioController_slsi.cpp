@@ -28,6 +28,9 @@ RadioText RT_Buffered;
 ServiceName PS_Final;
 ServiceName PS_Buffered;
 
+bool is_ps_event_received = false;
+bool is_rt_event_received = false;
+
 unsigned char rt_flag;
 unsigned char ps_flag;
 
@@ -1131,6 +1134,27 @@ fail:
         radio_state = FM_RADIO_ON;
 }
 
+ServiceName FmRadioController_slsi::GetPs() {
+    is_ps_event_received = false;
+    return PS_Final;
+}
+
+RadioText FmRadioController_slsi::GetLrText() {
+    is_rt_event_received = false;
+    return RT_Final;
+}
+
+int FmRadioController_slsi::ReadRDS() {
+    int ret = 0;
+
+    if (is_ps_event_received)
+        ret |= RDS_EVT_PS_UPDATE;
+    if (is_rt_event_received)
+        ret |= RDS_EVT_RT_UPDATE;
+
+    return ret;
+}
+
 /*******************************************************************************
  *
  * Functions about RDS, AF, and DNS
@@ -2066,6 +2090,7 @@ static void fm_radio_data_parsing(unsigned char *buf, radio_data_t *r_data)
             if ((RT_Final.bValidated == 1) || (RT_Final.bValidated % 10) == 0) {
                 strcpy(final_rds_data[test_data_index_rds].RadioText, RT_Final.Text);
                 rds_flag = 1;
+                is_rt_event_received = true;
             }
         }
     }
@@ -2096,6 +2121,7 @@ static void fm_radio_data_parsing(unsigned char *buf, radio_data_t *r_data)
             if ((PS_Final.bValidated == 2) || (PS_Final.bValidated % 10) == 0) {
                 strcpy(final_rds_data[test_data_index_rds].StationName, PS_Final.Text);
                 rds_flag = 1;
+                is_ps_event_received = true;
             }
         }
     }

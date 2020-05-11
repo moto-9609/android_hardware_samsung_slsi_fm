@@ -118,6 +118,19 @@ enum fm_radio_rds_index
     FM_RADIO_RDS_BLER,
 };
 
+typedef enum {
+    RDS_EVT_UPDATE         = 0x0001,
+    RDS_EVT_PI_UPDATE      = 0x0002,
+    RDS_EVT_PTY_UPDATE     = 0x0004,
+    RDS_EVT_PS_UPDATE      = 0x0008,
+    RDS_EVT_RT_UPDATE      = 0x0040,
+    RDS_EVT_AF_JUMP        = 0x0080,
+    RDS_EVT_AF_LIST        = 0x0100,
+    RDS_EVT_AF_LIST_UPDATE = 0x0200,
+    RDS_EVT_RDS_AVL        = 0x2000,
+    RDS_EVT_RDS_NOT_AVL    = 0x4000,
+} RdsEvts;
+
 #if !defined(FM_RADIO_TEST_MODE)
 extern void RDSDataReceived(Final_RDS_data rdsData);
 extern void RTPlusDataReceived(RTPlus_data rtplusData);
@@ -234,6 +247,10 @@ public:
     int GetSNR_th();
     int GetCnt_th();
     void setScanning(bool value);
+
+    ServiceName GetPs();
+    RadioText GetLrText();
+    int ReadRDS();
 };
 
 #endif /* __FM_RADIO_CONTROLLER_SLSI_H__ */
